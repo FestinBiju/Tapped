@@ -102,10 +102,4 @@ Pull requests and feedback are welcome! For major changes, please open an issue 
 
 ---
 
-## 📄 License
-
-MIT
-
----
-
 **Tapped** — Split, assign, and pay. Effortless group billing for everyone.
