@@ -1,1 +1,1 @@
-export { db } from './config';
+export { db, auth, googleProvider } from './config';

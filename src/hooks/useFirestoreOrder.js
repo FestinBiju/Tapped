@@ -91,7 +91,17 @@ export function useFirestoreOrder(orderId) {
 
   // Add new user
   const addUser = useCallback(async (userData) => {
-    if (!orderId || !order) return;
+    console.log('Firestore addUser called:', { orderId, hasOrder: !!order, userData });
+    
+    if (!orderId) {
+      console.error('No orderId for addUser');
+      return;
+    }
+    
+    if (!order) {
+      console.error('No order loaded for addUser');
+      return;
+    }
 
     try {
       const billRef = doc(db, 'bills', orderId);
@@ -112,9 +122,13 @@ export function useFirestoreOrder(orderId) {
         name: u.name,
       }));
 
+      console.log('Updating Firestore with participants:', [...currentParticipants, newParticipant]);
+      
       await updateDoc(billRef, { 
         participants: [...currentParticipants, newParticipant] 
       });
+      
+      console.log('Firestore user added successfully');
     } catch (err) {
       console.error('Error adding user:', err);
       setError(err);

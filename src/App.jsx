@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useOrder } from './context/OrderContext';
 import { useTheme } from './context/ThemeContext';
-import { OrderGrid, CheckoutSummary, UsersList } from './components';
+import { useAuth } from './context/AuthContext';
+import { OrderGrid, CheckoutSummary, UsersList, LoginScreen } from './components';
 import Sidebar from './components/Sidebar';
 import { useState } from 'react';
 
@@ -30,7 +31,25 @@ const pageTransition = {
 export default function App() {
   const { view } = useOrder();
   const { isDarkMode } = useTheme();
+  const { isAuthenticated, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Show loading spinner while checking auth
+  if (loading) {
+    return (
+      <div className={`
+        min-h-screen w-full flex items-center justify-center
+        ${isDarkMode ? 'dark bg-dark-bg' : 'bg-light-bg'}
+      `}>
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  // Show login screen if not authenticated
+  if (!isAuthenticated) {
+    return <LoginScreen />;
+  }
 
   return (
     <div className={`

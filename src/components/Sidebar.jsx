@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useOrder } from '../context/OrderContext';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import { AddUserButton } from './UserBubble';
 import ThemeToggle from './ThemeToggle';
 
@@ -10,8 +11,18 @@ const COLORS = ['#E53935', '#7CB342', '#1E88E5', '#FB8C00', '#5E35B1', '#00897B'
 export default function Sidebar({ isOpen, onClose }) {
   const { order, addUser, deleteUser } = useOrder();
   const { isDarkMode } = useTheme();
+  const { user, signOut, getUserInfo } = useAuth();
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [newUserName, setNewUserName] = useState('');
+
+  const userInfo = getUserInfo();
+
+  const handleSignOut = async () => {
+    if (window.confirm('Are you sure you want to sign out?')) {
+      await signOut();
+      onClose();
+    }
+  };
 
   const handleAddUser = () => setShowAddUserModal(true);
   const handleCloseModal = () => {
@@ -49,6 +60,42 @@ export default function Sidebar({ isOpen, onClose }) {
               <h2 className={`font-poppins font-bold text-2xl ${isDarkMode ? 'text-white' : 'text-black'}`}>Menu</h2>
               <button onClick={onClose} className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>×</button>
             </div>
+
+            {/* User Profile Section */}
+            {userInfo && (
+              <div className={`
+                flex items-center gap-3 mb-6 p-3 rounded-xl
+                ${isDarkMode ? 'bg-white/10' : 'bg-black/5'}
+              `}>
+                {userInfo.photoURL ? (
+                  <img 
+                    src={userInfo.photoURL} 
+                    alt={userInfo.name}
+                    className="w-10 h-10 rounded-full"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-poppins font-semibold text-sm">
+                    {userInfo.initials}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className={`font-poppins font-medium truncate ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                    {userInfo.name}
+                  </p>
+                  {userInfo.email && (
+                    <p className={`font-poppins text-xs truncate ${isDarkMode ? 'text-white/60' : 'text-black/60'}`}>
+                      {userInfo.email}
+                    </p>
+                  )}
+                  {userInfo.isAnonymous && (
+                    <p className={`font-poppins text-xs ${isDarkMode ? 'text-white/60' : 'text-black/60'}`}>
+                      Guest User
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="mb-8">
               <ThemeToggle />
             </div>
@@ -121,6 +168,24 @@ export default function Sidebar({ isOpen, onClose }) {
                 <span className="font-poppins font-medium">Add User</span>
               </motion.button>
             </div>
+
+            {/* Sign Out Button */}
+            <motion.button
+              onClick={handleSignOut}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={`
+                w-full flex items-center justify-center gap-2
+                p-3 rounded-xl mt-auto
+                ${isDarkMode ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-red-500/10 text-red-500 hover:bg-red-500/20'}
+                transition-colors duration-200
+              `}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span className="font-poppins font-medium">Sign Out</span>
+            </motion.button>
           </div>
 
           {/* Add User Modal */}

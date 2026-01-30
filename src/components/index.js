@@ -6,4 +6,5 @@ export { default as ThemeToggle } from './ThemeToggle';
 export { default as OrderGrid } from './OrderGrid';
 export { default as CheckoutSummary } from './CheckoutSummary';
 export { default as UsersList } from './UsersList';
+export { default as LoginScreen } from './LoginScreen';
 export { DragDropProvider, useDragDrop } from './DragDropProvider';

@@ -1,7 +1,10 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { useFirestoreOrder } from '../hooks/useFirestoreOrder';
+import { useAuth } from './AuthContext';
 
 const OrderContext = createContext();
+
+const COLORS = ['#E53935', '#7CB342', '#1E88E5', '#FB8C00', '#5E35B1', '#00897B', '#C62828', '#F57C00'];
 
 // Fallback sample data (used when Firestore is not available)
 const fallbackOrder = {
@@ -16,16 +19,15 @@ const fallbackOrder = {
     { id: '6', name: 'Coca cola L', qty: 1, price: 90, assignedTo: [] },
     { id: '7', name: 'Chicken Biriyani', qty: 1, price: 140, assignedTo: [] },
   ],
-  users: [
-    { id: 'user1', initials: 'FB', color: '#E53935', name: 'Festin' },
-    { id: 'user2', initials: 'DN', color: '#7CB342', name: 'Dan' },
-    { id: 'user3', initials: 'AB', color: '#1E88E5', name: 'Abe' },
-  ],
+  users: [],
   serviceCharge: 50,
   gst: 30,
 };
 
 export function OrderProvider({ children }) {
+  // Get authenticated user
+  const { user, getUserInfo } = useAuth();
+  
   // Try to use Firestore, fallback to local state
   const urlParams = new URLSearchParams(window.location.search);
   const orderId = urlParams.get('bill') || 'AS3-26'; // Could be dynamic based on URL params
@@ -40,12 +42,80 @@ export function OrderProvider({ children }) {
 
   // Local state fallback
   const [localOrder, setLocalOrder] = useState(fallbackOrder);
-  const [currentUserId, setCurrentUserId] = useState('user1');
+  const [currentUserId, setCurrentUserId] = useState(null);
   const [view, setView] = useState('order'); // 'order', 'checkout', or 'users'
+  
+  // Track if we've added the auth user already
+  const hasAddedAuthUser = useRef(false);
 
   // Use Firestore order if available, otherwise use local
   const order = firestoreOrder || localOrder;
   const useFirestore = !!firestoreOrder && !error;
+
+  // Auto-add authenticated user to the bill
+  useEffect(() => {
+    // Wait until we have user info and order is loaded (not loading)
+    if (!user || loading) {
+      console.log('Waiting for user/order - user:', !!user, 'loading:', loading);
+      return;
+    }
+    
+    const userInfo = getUserInfo();
+    if (!userInfo) {
+      console.log('No userInfo available');
+      return;
+    }
+
+    // Need order to be available
+    if (!order) {
+      console.log('Order not available yet');
+      return;
+    }
+
+    // Check if user already exists in the order
+    const users = order.users || [];
+    const existingUser = users.find(u => u.id === userInfo.uid);
+    
+    console.log('Checking user in order:', {
+      uid: userInfo.uid,
+      existingUser: !!existingUser,
+      hasAddedAuthUser: hasAddedAuthUser.current,
+      useFirestore,
+      usersCount: users.length,
+    });
+    
+    if (!existingUser && !hasAddedAuthUser.current) {
+      // Add the authenticated user to the bill
+      const randomColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+      const newUser = {
+        id: userInfo.uid,
+        initials: userInfo.initials,
+        color: randomColor,
+        name: userInfo.name,
+        photoURL: userInfo.photoURL || null,
+      };
+      
+      console.log('Adding authenticated user to bill:', newUser);
+      hasAddedAuthUser.current = true; // Set immediately to prevent double-add
+      
+      if (useFirestore && firestoreOrder) {
+        console.log('Adding via Firestore');
+        firestoreAddUser(newUser);
+      } else {
+        console.log('Adding to local order');
+        setLocalOrder(prev => ({
+          ...prev,
+          users: [...prev.users, newUser],
+        }));
+      }
+      setCurrentUserId(userInfo.uid);
+    } else if (existingUser && !currentUserId) {
+      // User already exists, just set as current
+      console.log('User already exists, setting as current:', existingUser.id);
+      setCurrentUserId(existingUser.id);
+      hasAddedAuthUser.current = true;
+    }
+  }, [user, loading, order, firestoreOrder, useFirestore, firestoreAddUser, getUserInfo, currentUserId]);
 
   // Assign an item to a user
   const assignItemToUser = useCallback((itemId, userId) => {
