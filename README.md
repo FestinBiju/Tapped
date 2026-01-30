@@ -2,6 +2,7 @@
 
 A modern, collaborative bill-splitting and payment web app for groups, built with React, Tailwind, Firebase, and Material3 UI.
 
+Click here to preview sample: [Tapped bill splitter]( https://tapped-bill-splitter.netlify.app/?bill=AS3-26)
 ---
 
 ## 🌟 Features
