@@ -104,33 +104,14 @@ export function OrderProvider({ children }) {
             assignedTo: item.assignedTo.filter(id => id !== userId)
           }))
         };
+        // If deleted user is current, switch to first remaining user
+        if (currentUserId === userId && newUsers.length > 0) {
+          setCurrentUserId(newUsers[0].id);
+        }
         return newLocalOrder;
       });
-      // Switch current user if the deleted user was selected
-      setCurrentUserId(prev => {
-        if (prev === userId) {
-          setLocalOrder(currentOrder => {
-            if (currentOrder.users.length > 0) {
-              const nextUserId = currentOrder.users[0].id;
-              return currentOrder;
-            }
-            return currentOrder;
-          });
-          return userId; // Will be updated in next effect
-        }
-        return prev;
-      });
     }
-  }, [useFirestore, firestoreRemoveUser]);
-
-  // Check if current user still exists, if not switch to first available
-  useEffect(() => {
-    const userExists = localOrder.users.some(u => u.id === currentUserId);
-    if (!userExists && localOrder.users.length > 0) {
-      console.log('Current user no longer exists, switching to:', localOrder.users[0].id);
-      setCurrentUserId(localOrder.users[0].id);
-    }
-  }, [localOrder.users, currentUserId]);
+  }, [useFirestore, firestoreRemoveUser, currentUserId]);
 
   // Calculate share for a specific user
   const calculateUserShare = useCallback((userId) => {
