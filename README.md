@@ -55,7 +55,6 @@ Tapped makes group bill splitting effortless:
 - Node.js (v18+ recommended)
 - npm or yarn
 - Firebase project (with Firestore enabled)
-- GPay API credentials
 
 ---
 
