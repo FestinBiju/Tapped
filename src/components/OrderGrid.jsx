@@ -8,11 +8,15 @@ import Logo from './Logo';
 import HotelBadge from './HotelBadge';
 import ThemeToggle from './ThemeToggle';
 
+const COLORS = ['#E53935', '#7CB342', '#1E88E5', '#FB8C00', '#5E35B1', '#00897B', '#C62828', '#F57C00'];
+
 export default function OrderGrid() {
-  const { order, assignItemToUser, setView } = useOrder();
+  const { order, assignItemToUser, addUser, setView } = useOrder();
   const { isDarkMode } = useTheme();
   const [draggedItem, setDraggedItem] = useState(null);
   const [dropTargetUser, setDropTargetUser] = useState(null);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [newUserName, setNewUserName] = useState('');
   const userBubblesRef = useRef({});
 
   // Track pointer position during drag using global pointer events
@@ -76,12 +80,34 @@ export default function OrderGrid() {
   };
 
   const handleAddUser = () => {
-    // TODO: Open modal to add new user
-    console.log('Add user clicked');
+    setShowAddUserModal(true);
   };
 
-  const handleProceed = () => {
-    setView('checkout');
+  const handleConfirmAddUser = () => {
+    if (newUserName.trim()) {
+      // Generate initials from name
+      const initials = newUserName
+        .split(' ')
+        .map(word => word[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+      
+      // Pick a random color
+      const randomColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+      
+      // Add user to the order
+      addUser(initials, randomColor, newUserName);
+      
+      // Reset and close modal
+      setNewUserName('');
+      setShowAddUserModal(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setNewUserName('');
+    setShowAddUserModal(false);
   };
 
   return (
@@ -95,6 +121,22 @@ export default function OrderGrid() {
         <header className="flex items-center justify-between mb-6">
           <Logo />
           <div className="flex items-center gap-3">
+            <motion.button
+              onClick={() => setView('users')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`
+                px-4 py-2 rounded-lg
+                font-poppins font-semibold text-sm
+                transition-colors duration-200
+                ${isDarkMode
+                  ? 'bg-white/10 text-white hover:bg-white/20'
+                  : 'bg-black/10 text-black hover:bg-black/20'
+                }
+              `}
+            >
+              Users
+            </motion.button>
             <ThemeToggle />
             <HotelBadge name={order.hotelName} />
           </div>
@@ -173,35 +215,89 @@ export default function OrderGrid() {
 
           {/* Spacer */}
           <div className="flex-grow" />
-
-          {/* Proceed Arrow */}
-          <motion.button
-            onClick={handleProceed}
-            whileHover={{ scale: 1.1, x: 5 }}
-            whileTap={{ scale: 0.95 }}
-            className={`
-              flex-shrink-0
-              w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20
-              flex items-center justify-center
-              ${isDarkMode ? 'text-white' : 'text-black'}
-            `}
-          >
-            <svg 
-              className="w-8 h-8 sm:w-10 sm:h-10" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M17 8l4 4m0 0l-4 4m4-4H3" 
-              />
-            </svg>
-          </motion.button>
         </div>
       </motion.div>
+
+      {/* Add User Modal */}
+      <AnimatePresence>
+        {showAddUserModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleCloseModal}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className={`
+                w-full max-w-sm mx-4 p-6 rounded-2xl
+                ${isDarkMode ? 'bg-dark-bg' : 'bg-light-bg'}
+              `}
+            >
+              <h2 className={`
+                font-poppins font-semibold text-2xl mb-4
+                ${isDarkMode ? 'text-white' : 'text-black'}
+              `}>
+                Add New User
+              </h2>
+              
+              <input
+                type="text"
+                placeholder="Enter user name"
+                value={newUserName}
+                onChange={(e) => setNewUserName(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleConfirmAddUser()}
+                autoFocus
+                className={`
+                  w-full px-4 py-3 rounded-lg mb-4
+                  font-poppins text-base
+                  focus:outline-none focus:ring-2 focus:ring-primary
+                  ${isDarkMode 
+                    ? 'bg-white/10 text-white placeholder-white/50' 
+                    : 'bg-black/10 text-black placeholder-black/50'
+                  }
+                `}
+              />
+              
+              <div className="flex gap-3">
+                <motion.button
+                  onClick={handleCloseModal}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`
+                    flex-1 py-3 rounded-lg font-poppins font-semibold
+                    transition-colors duration-200
+                    ${isDarkMode
+                      ? 'bg-white/10 text-white hover:bg-white/20'
+                      : 'bg-black/10 text-black hover:bg-black/20'
+                    }
+                  `}
+                >
+                  Cancel
+                </motion.button>
+                
+                <motion.button
+                  onClick={handleConfirmAddUser}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`
+                    flex-1 py-3 rounded-lg font-poppins font-semibold
+                    text-white bg-primary
+                    transition-colors duration-200
+                    hover:bg-primary/90
+                  `}
+                >
+                  Add User
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

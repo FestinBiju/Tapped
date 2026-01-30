@@ -88,14 +88,13 @@ export function AddUserButton({ onClick }) {
         flex items-center justify-center
         focus:outline-none focus:ring-4 focus:ring-primary/50
         transition-colors duration-200
+        relative
       `}
     >
-      <div className="flex flex-col items-center justify-center">
-        {/* Vertical line */}
-        <div className="w-1 h-6 bg-gray-600 dark:bg-gray-300 rounded-full absolute" />
-        {/* Horizontal line */}
-        <div className="w-6 h-1 bg-gray-600 dark:bg-gray-300 rounded-full absolute" />
-      </div>
+      {/* Vertical line */}
+      <div className="w-1 h-6 bg-gray-600 dark:bg-gray-300 rounded-full absolute" />
+      {/* Horizontal line */}
+      <div className="w-6 h-1 bg-gray-600 dark:bg-gray-300 rounded-full absolute" />
     </motion.button>
   );
 }

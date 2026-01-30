@@ -34,12 +34,13 @@ export function OrderProvider({ children }) {
     error,
     assignItemToUser: firestoreAssign,
     addUser: firestoreAddUser,
+    removeUser: firestoreRemoveUser,
   } = useFirestoreOrder(orderId);
 
   // Local state fallback
   const [localOrder, setLocalOrder] = useState(fallbackOrder);
   const [currentUserId, setCurrentUserId] = useState('user1');
-  const [view, setView] = useState('order'); // 'order' or 'checkout'
+  const [view, setView] = useState('order'); // 'order', 'checkout', or 'users'
 
   // Use Firestore order if available, otherwise use local
   const order = firestoreOrder || localOrder;
@@ -88,6 +89,49 @@ export function OrderProvider({ children }) {
     }
   }, [useFirestore, firestoreAddUser]);
 
+  // Delete a user
+  const deleteUser = useCallback((userId) => {
+    if (useFirestore) {
+      firestoreRemoveUser(userId);
+    } else {
+      setLocalOrder(prev => {
+        const newUsers = prev.users.filter(user => user.id !== userId);
+        const newLocalOrder = {
+          ...prev,
+          users: newUsers,
+          items: prev.items.map(item => ({
+            ...item,
+            assignedTo: item.assignedTo.filter(id => id !== userId)
+          }))
+        };
+        return newLocalOrder;
+      });
+      // Switch current user if the deleted user was selected
+      setCurrentUserId(prev => {
+        if (prev === userId) {
+          setLocalOrder(currentOrder => {
+            if (currentOrder.users.length > 0) {
+              const nextUserId = currentOrder.users[0].id;
+              return currentOrder;
+            }
+            return currentOrder;
+          });
+          return userId; // Will be updated in next effect
+        }
+        return prev;
+      });
+    }
+  }, [useFirestore, firestoreRemoveUser]);
+
+  // Check if current user still exists, if not switch to first available
+  useEffect(() => {
+    const userExists = localOrder.users.some(u => u.id === currentUserId);
+    if (!userExists && localOrder.users.length > 0) {
+      console.log('Current user no longer exists, switching to:', localOrder.users[0].id);
+      setCurrentUserId(localOrder.users[0].id);
+    }
+  }, [localOrder.users, currentUserId]);
+
   // Calculate share for a specific user
   const calculateUserShare = useCallback((userId) => {
     if (!order) return { items: [], subtotal: 0, serviceCharge: 0, gst: 0, total: 0 };
@@ -134,6 +178,7 @@ export function OrderProvider({ children }) {
       setCurrentUserId,
       assignItemToUser,
       addUser,
+      deleteUser,
       calculateUserShare,
       view,
       setView,

@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useOrder } from './context/OrderContext';
 import { useTheme } from './context/ThemeContext';
-import { OrderGrid, CheckoutSummary } from './components';
+import { OrderGrid, CheckoutSummary, UsersList } from './components';
 
 // Page transition variants
 const pageVariants = {
@@ -47,7 +47,7 @@ export default function App() {
           >
             <OrderGrid />
           </motion.div>
-        ) : (
+        ) : view === 'checkout' ? (
           <motion.div
             key="checkout"
             initial="initial"
@@ -57,6 +57,17 @@ export default function App() {
             transition={pageTransition}
           >
             <CheckoutSummary />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="users"
+            initial="initial"
+            animate="in"
+            exit="out"
+            variants={pageVariants}
+            transition={pageTransition}
+          >
+            <UsersList />
           </motion.div>
         )}
       </AnimatePresence>
