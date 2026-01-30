@@ -2031,7 +2031,9 @@ This typically indicates that your device does not have a healthy Internet conne
                     text-white bg-primary
                     transition-colors duration-200
                     hover:bg-primary/90
-                  `,children:"Add User"})]})]})})})]})}function KD(){const{order:t,currentUser:e,calculateUserShare:n,setView:r,assignItemToUser:i}=es(),{isDarkMode:s}=Dn(),o=e?n(e.id):null,l=()=>{r("order")},u=()=>{alert("Payment initiated!")};return!e||!o?k.jsx("div",{className:`
+                  `,children:"Add User"})]})]})})})]})}function KD(){const{order:t,currentUser:e,calculateUserShare:n,setView:r,assignItemToUser:i}=es(),{isDarkMode:s}=Dn(),o=e?n(e.id):null,l=()=>{r("order")},u=()=>{if(!o||o.total<=0){alert("No items to pay for!");return}window.location.href="upi://pay",setTimeout(()=>{alert(`Your share: ₹${o.total.toFixed(2)}
+
+Please complete the payment in your UPI app.`)},500)};return!e||!o?k.jsx("div",{className:`
         min-h-screen w-full flex items-center justify-center
         ${s?"bg-dark-bg text-white":"bg-light-bg text-black"}
       `,children:k.jsx("p",{className:"font-poppins text-lg",children:"Select a user to view their share"})}):k.jsxs(te.div,{initial:{opacity:0,x:50},animate:{opacity:1,x:0},exit:{opacity:0,x:-50},transition:{type:"spring",stiffness:300,damping:30},className:`

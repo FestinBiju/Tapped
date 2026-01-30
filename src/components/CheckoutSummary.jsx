@@ -16,8 +16,19 @@ export default function CheckoutSummary() {
   };
 
   const handlePay = () => {
-    // TODO: Integrate payment gateway
-    alert('Payment initiated!');
+    if (!userShare || userShare.total <= 0) {
+      alert('No items to pay for!');
+      return;
+    }
+
+    // Open UPI app directly (user enters details manually)
+    // This works on mobile to open GPay, PhonePe, Paytm, etc.
+    window.location.href = 'upi://pay';
+    
+    // Show amount info after a short delay
+    setTimeout(() => {
+      alert(`Your share: ₹${userShare.total.toFixed(2)}\n\nPlease complete the payment in your UPI app.`);
+    }, 500);
   };
 
   if (!currentUser || !userShare) {
