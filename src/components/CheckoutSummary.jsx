@@ -6,7 +6,7 @@ import HotelBadge from './HotelBadge';
 import ThemeToggle from './ThemeToggle';
 
 export default function CheckoutSummary() {
-  const { order, currentUser, calculateUserShare, setView } = useOrder();
+  const { order, currentUser, calculateUserShare, setView, assignItemToUser } = useOrder();
   const { isDarkMode } = useTheme();
 
   // Calculate the current user's share
@@ -116,9 +116,39 @@ export default function CheckoutSummary() {
                 <span className="font-poppins font-light text-base sm:text-lg">
                   {item.name}
                 </span>
-                <span className="font-poppins font-light text-base sm:text-lg">
-                  ₹{item.sharedPrice.toFixed(2)}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="font-poppins font-light text-base sm:text-lg">
+                    ₹{item.sharedPrice.toFixed(2)}
+                  </span>
+                  <motion.button
+                    onClick={() => assignItemToUser(item.id, currentUser.id)}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`
+                      p-2 rounded-lg
+                      transition-colors duration-200
+                      ${isDarkMode 
+                        ? 'hover:bg-white/10 text-red-400 hover:text-red-300' 
+                        : 'hover:bg-black/10 text-red-500 hover:text-red-600'
+                      }
+                    `}
+                    title="Delete item"
+                  >
+                    <svg 
+                      className="w-5 h-5" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" 
+                      />
+                    </svg>
+                  </motion.button>
+                </div>
               </div>
               <div className={`
                 h-[1px] w-full
