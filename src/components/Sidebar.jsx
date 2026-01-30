@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useOrder } from '../context/OrderContext';
 import { useTheme } from '../context/ThemeContext';
-import UserBubble, { AddUserButton } from './UserBubble';
+import { AddUserButton } from './UserBubble';
 import ThemeToggle from './ThemeToggle';
 
 const COLORS = ['#E53935', '#7CB342', '#1E88E5', '#FB8C00', '#5E35B1', '#00897B', '#C62828', '#F57C00'];
 
 export default function Sidebar({ isOpen, onClose }) {
-  const { order, addUser, setCurrentUserId, currentUserId } = useOrder();
+  const { order, addUser, deleteUser } = useOrder();
   const { isDarkMode } = useTheme();
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [newUserName, setNewUserName] = useState('');
@@ -28,6 +28,12 @@ export default function Sidebar({ isOpen, onClose }) {
     }
   };
 
+  const handleDeleteUser = (userId) => {
+    if (window.confirm('Are you sure you want to remove this user?')) {
+      deleteUser(userId);
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -41,26 +47,80 @@ export default function Sidebar({ isOpen, onClose }) {
           <div className="flex flex-col h-full p-6">
             <div className="flex items-center justify-between mb-8">
               <h2 className={`font-poppins font-bold text-2xl ${isDarkMode ? 'text-white' : 'text-black'}`}>Menu</h2>
-              <button onClick={onClose} className="text-2xl font-bold">×</button>
+              <button onClick={onClose} className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>×</button>
             </div>
             <div className="mb-8">
               <ThemeToggle />
             </div>
-            <div className="mb-4">
-              <h3 className={`font-poppins font-semibold text-lg mb-2 ${isDarkMode ? 'text-white' : 'text-black'}`}>Users</h3>
-              <div className="flex flex-wrap gap-3">
-                {order.users.map(user => (
-                  <UserBubble
+            <div className="flex-1">
+              <h3 className={`font-poppins font-semibold text-lg mb-4 ${isDarkMode ? 'text-white' : 'text-black'}`}>Users</h3>
+              
+              {/* User List as Rows */}
+              <div className="space-y-2 mb-4">
+                {order?.users?.map(user => (
+                  <motion.div
                     key={user.id}
-                    user={user}
-                    isActive={user.id === currentUserId}
-                    onClick={() => setCurrentUserId(user.id)}
-                  />
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className={`
+                      flex items-center justify-between
+                      p-3 rounded-xl
+                      ${isDarkMode ? 'bg-white/10' : 'bg-black/5'}
+                    `}
+                  >
+                    {/* User Avatar and Name */}
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-poppins font-semibold text-sm"
+                        style={{ backgroundColor: user.color }}
+                      >
+                        {user.initials}
+                      </div>
+                      <span className={`font-poppins font-medium ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                        {user.name}
+                      </span>
+                    </div>
+                    
+                    {/* Delete Button */}
+                    <motion.button
+                      onClick={() => handleDeleteUser(user.id)}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      className={`
+                        p-2 rounded-lg
+                        ${isDarkMode ? 'hover:bg-red-500/20 text-red-400' : 'hover:bg-red-500/10 text-red-500'}
+                        transition-colors duration-200
+                      `}
+                      title="Remove user"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </motion.button>
+                  </motion.div>
                 ))}
-                <AddUserButton onClick={handleAddUser} />
               </div>
+
+              {/* Add User Button */}
+              <motion.button
+                onClick={handleAddUser}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`
+                  w-full flex items-center justify-center gap-2
+                  p-3 rounded-xl
+                  border-2 border-dashed
+                  ${isDarkMode ? 'border-white/30 text-white/70 hover:bg-white/5' : 'border-black/30 text-black/70 hover:bg-black/5'}
+                  transition-colors duration-200
+                `}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span className="font-poppins font-medium">Add User</span>
+              </motion.button>
             </div>
-            {/* Add more sidebar content here if needed */}
           </div>
 
           {/* Add User Modal */}
