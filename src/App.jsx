@@ -2,6 +2,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useOrder } from './context/OrderContext';
 import { useTheme } from './context/ThemeContext';
 import { OrderGrid, CheckoutSummary, UsersList } from './components';
+import Sidebar from './components/Sidebar';
+import { useState } from 'react';
 
 // Page transition variants
 const pageVariants = {
@@ -28,6 +30,7 @@ const pageTransition = {
 export default function App() {
   const { view } = useOrder();
   const { isDarkMode } = useTheme();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className={`
@@ -35,6 +38,7 @@ export default function App() {
       ${isDarkMode ? 'dark bg-dark-bg' : 'bg-light-bg'}
       transition-colors duration-500
     `}>
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <AnimatePresence mode="wait">
         {view === 'order' ? (
           <motion.div
@@ -45,7 +49,7 @@ export default function App() {
             variants={pageVariants}
             transition={pageTransition}
           >
-            <OrderGrid />
+            <OrderGrid onOpenSidebar={() => setSidebarOpen(true)} />
           </motion.div>
         ) : view === 'checkout' ? (
           <motion.div

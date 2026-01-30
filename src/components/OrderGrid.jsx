@@ -6,11 +6,11 @@ import ItemCard from './ItemCard';
 import UserBubble, { AddUserButton } from './UserBubble';
 import Logo from './Logo';
 import HotelBadge from './HotelBadge';
-import ThemeToggle from './ThemeToggle';
+import Sidebar from './Sidebar';
 
 const COLORS = ['#E53935', '#7CB342', '#1E88E5', '#FB8C00', '#5E35B1', '#00897B', '#C62828', '#F57C00'];
 
-export default function OrderGrid() {
+export default function OrderGrid({ onOpenSidebar }) {
   const { order, assignItemToUser, addUser, setView } = useOrder();
   const { isDarkMode } = useTheme();
   const [draggedItem, setDraggedItem] = useState(null);
@@ -119,25 +119,10 @@ export default function OrderGrid() {
       <div className="max-w-lg mx-auto px-4 sm:px-6 py-6 pb-32">
         {/* Header */}
         <header className="flex items-center justify-between mb-6">
-          <Logo />
+          <button onClick={onOpenSidebar} className="flex items-center gap-2 focus:outline-none">
+            <Logo />
+          </button>
           <div className="flex items-center gap-3">
-            <motion.button
-              onClick={() => setView('users')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`
-                px-4 py-2 rounded-lg
-                font-poppins font-semibold text-sm
-                transition-colors duration-200
-                ${isDarkMode
-                  ? 'bg-white/10 text-white hover:bg-white/20'
-                  : 'bg-black/10 text-black hover:bg-black/20'
-                }
-              `}
-            >
-              Users
-            </motion.button>
-            <ThemeToggle />
             <HotelBadge name={order.hotelName} />
           </div>
         </header>
