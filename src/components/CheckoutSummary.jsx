@@ -3,7 +3,6 @@ import { useOrder } from '../context/OrderContext';
 import { useTheme } from '../context/ThemeContext';
 import Logo from './Logo';
 import HotelBadge from './HotelBadge';
-import ThemeToggle from './ThemeToggle';
 
 export default function CheckoutSummary() {
   const { order, currentUser, calculateUserShare, setView, assignItemToUser } = useOrder();
@@ -74,7 +73,6 @@ export default function CheckoutSummary() {
             <Logo />
           </div>
           <div className="flex items-center gap-3">
-            <ThemeToggle />
             <HotelBadge name={order.hotelName} />
           </div>
         </header>

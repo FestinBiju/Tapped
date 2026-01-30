@@ -27,7 +27,8 @@ const fallbackOrder = {
 
 export function OrderProvider({ children }) {
   // Try to use Firestore, fallback to local state
-  const orderId = 'AS3-26'; // Could be dynamic based on URL params
+  const urlParams = new URLSearchParams(window.location.search);
+  const orderId = urlParams.get('bill') || 'AS3-26'; // Could be dynamic based on URL params
   const { 
     order: firestoreOrder, 
     loading, 

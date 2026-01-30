@@ -1,19 +1,16 @@
 import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 
-export default function ItemCard({ item, onDragStart, onDrag, onDragEnd, isDragging }) {
+export default function ItemCard({ item, users = [], onDragStart, onDrag, onDragEnd, isDragging }) {
   const { isDarkMode } = useTheme();
 
-  // Format item name to handle multi-line display
-  const formatName = (name) => {
-    const words = name.split(' ');
-    if (words.length > 1) {
-      return words;
-    }
-    return [name];
-  };
+  // Get assigned users with their colors
+  const assignedUsers = item.assignedTo
+    .map(userId => users.find(u => u.id === userId))
+    .filter(Boolean);
 
-  const nameWords = formatName(item.name);
+  // Get the primary border color (first assigned user's color)
+  const borderColor = assignedUsers.length > 0 ? assignedUsers[0].color : null;
 
   return (
     <motion.div
@@ -33,17 +30,21 @@ export default function ItemCard({ item, onDragStart, onDrag, onDragEnd, isDragg
       onDragStart={onDragStart}
       onDrag={onDrag}
       onDragEnd={onDragEnd}
+      style={{
+        borderColor: borderColor || undefined,
+        borderStyle: borderColor ? 'solid' : 'dashed',
+      }}
       className={`
         relative cursor-grab active:cursor-grabbing
-        w-full h-36 sm:h-40 md:h-44
-        rounded-4xl border-5 border-dashed
+        w-full min-h-36 sm:min-h-40 md:min-h-44
+        rounded-4xl border-5
         p-4 sm:p-5 flex flex-col justify-between
-        transition-colors duration-300
-        ${isDarkMode 
-          ? 'bg-dark-card border-dark-border' 
-          : 'bg-light-card border-light-border'
+        transition-colors duration-300 overflow-hidden
+        ${!borderColor && (isDarkMode 
+          ? 'border-dark-border' 
+          : 'border-light-border')
         }
-        ${item.assignedTo.length > 0 ? 'ring-2 ring-primary ring-offset-2' : ''}
+        ${isDarkMode ? 'bg-dark-card' : 'bg-light-card'}
       `}
       initial={{ opacity: 0, y: 20 }}
       animate={{ 
@@ -53,53 +54,49 @@ export default function ItemCard({ item, onDragStart, onDrag, onDragEnd, isDragg
       }}
     >
       {/* Item Name */}
-      <div className="flex flex-col">
-        {nameWords.map((word, idx) => (
-          <h3 
-            key={idx}
-            className={`
-              font-poppins font-semibold
-              text-lg sm:text-xl md:text-2xl lg:text-3xl
-              leading-tight
-              ${isDarkMode ? 'text-white' : 'text-black'}
-            `}
-          >
-            {word}
-          </h3>
-        ))}
+      <div className="flex-1 overflow-hidden">
+        <h3 
+          className={`
+            font-poppins font-semibold
+            text-lg sm:text-xl md:text-2xl
+            leading-tight break-words hyphens-auto
+            ${isDarkMode ? 'text-white' : 'text-black'}
+          `}
+        >
+          {item.name}
+        </h3>
       </div>
 
       {/* Quantity and Price */}
-      <div className="flex flex-col gap-0.5">
+      <div className="flex flex-col gap-0.5 mt-2 flex-shrink-0">
         <p className={`
           font-poppins font-normal
-          text-xs sm:text-sm md:text-base
+          text-xs sm:text-sm
           ${isDarkMode ? 'text-white/60' : 'text-black/60'}
         `}>
           Qty: {item.qty}
         </p>
         <p className={`
           font-poppins font-normal
-          text-xs sm:text-sm md:text-base
+          text-xs sm:text-sm
           ${isDarkMode ? 'text-white/60' : 'text-black/60'}
         `}>
           ₹{item.price.toFixed(2)}
         </p>
       </div>
 
-      {/* Assigned users indicator */}
-      {item.assignedTo.length > 0 && (
-        <div className="absolute -top-2 -right-2 flex -space-x-2">
-          {item.assignedTo.slice(0, 3).map((userId, idx) => (
+      {/* Assigned users indicator dots */}
+      {assignedUsers.length > 0 && (
+        <div className="absolute top-3 right-3 flex gap-1.5">
+          {assignedUsers.map((user, idx) => (
             <div 
-              key={userId}
-              className="w-6 h-6 rounded-full bg-primary border-2 border-white dark:border-dark-bg flex items-center justify-center"
-              style={{ zIndex: 3 - idx }}
-            >
-              <span className="text-[8px] text-white font-semibold">
-                {idx + 1}
-              </span>
-            </div>
+              key={user.id}
+              className="w-4 h-4 rounded-full shadow-md"
+              style={{ 
+                backgroundColor: user.color,
+              }}
+              title={user.name}
+            />
           ))}
         </div>
       )}

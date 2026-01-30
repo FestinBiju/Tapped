@@ -144,6 +144,7 @@ export default function OrderGrid({ onOpenSidebar }) {
               <ItemCard
                 key={item.id}
                 item={item}
+                users={order.users}
                 onDragStart={() => handleDragStart(item)}
                 onDrag={handleDrag}
                 onDragEnd={(event, info) => handleDragEnd(item, event, info)}
